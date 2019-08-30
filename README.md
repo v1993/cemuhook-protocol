@@ -27,7 +27,7 @@ local function num2bytestring(num, len)
 end
 
 local function bytestring2num(str)
-	local arr = {str:byte(1, #str)}
+	local arr = {str:byte(1, -1)}
 	local num = arr[1]
 	for i=2,#str do
 		num = (arr[i] << ((i-1) * 8)) | num
