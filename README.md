@@ -153,8 +153,8 @@ Acceleration values are in m/s², gyroscope are in deg/s.
 | 28 | 1 | Unsigned 8-bit | Analog L1 |
 | 29 | 1 | Unsigned 8-bit | Analog R2 |
 | 30 | 1 | Unsigned 8-bit | Analog L2 |
-| 31 | 6 | Complex | First touch |
-| 37 | 6 | Complex | Second touch |
+| 31 | 6 | Complex | First touch (see below) |
+| 37 | 6 | Complex | Second touch (see below) |
 | 43 | 8 | Unsigned 64-bit | Motion data timestamp, update only with accelerometer (but not gyro only) changes |
 | 51 | 4 | Float | Accelerometer X axis |
 | 55 | 4 | Float | Accelerometer Y axis |
@@ -162,3 +162,11 @@ Acceleration values are in m/s², gyroscope are in deg/s.
 | 63 | 4 | Float | Gyroscope pitch |
 | 67 | 4 | Float | Gyroscope yaw |
 | 71 | 4 | Float | Gyroscope roll |
+
+#### Touch data structure
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 1 | Unsigned 8-bit | Is touch active (`1` if active, else `0`) |
+| 1 | 1 | Unsigned 8-bit | Touch id (should be the same for one continious touch) |
+| 2 | 2 | Unsigned 16-bit | Touch X position |
+| 4 | 2 | Unsigned 16-bit | Touch Y position |
