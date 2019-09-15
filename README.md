@@ -1,13 +1,14 @@
 # Introduction
 
-Cemuhook is modification for Cemu WiiU emulator which allow to do all sorts of cool stuff, including custom button/motion sources.
-Purpose of this document is to shed light on previously undocumented protocol it uses.
+Cemuhook is modification for Cemu WiiU emulator which allow to do all sorts of cool stuff, including custom button/motion sources.  
+Purpose of this document is to shed light on previously undocumented protocol it uses.  
+**Only one known and existing version of protocol at the moment of creation of this document is `1001` which is described below.**
 
 ## Common information
 
 * Cemuhook use UDP protocol, which may make things tricky but very efficient
-* Cemuhook use server at localhost:26760 (number is a port)
-* Your application should serve all sources it can, not few different instances.
+* Cemuhook use server at `localhost:26760` (number is a port)
+* Your application should serve all sources it can, not few different instances of it.
 * Each (valid) packet either from cemuhook or your server contain:
 * * Header (16 bytes)
 * * Message type (4 bytes)
@@ -15,39 +16,20 @@ Purpose of this document is to shed light on previously undocumented protocol it
 
 ## Numbers encoding
 You can refer to C# implementations of BitConverter for details on this.  
-Also, you can take a look at this Lua 5.3 code which should give you overall impression:
-
-```Lua
-local function num2bytestring(num, len)
-	local arr = {}
-	for i=1,len do
-		arr[i] = (num >> ((i-1) * 8)) & 0xFF
-	end
-	return string.char(table.unpack(arr))
-end
-
-local function bytestring2num(str)
-	local arr = {str:byte(1, -1)}
-	local num = arr[1]
-	for i=2,#str do
-		num = (arr[i] << ((i-1) * 8)) | num
-	end
-	return num
-end
-```
+Numbers are encoded as little endian, which is also native endian on most platforms in the world (but not all).
 
 # Header stucture
 
-| First byte position | Last byte position | Meaning |
-| ------------------- | ------------------ | ------- |
-| 1  | 4  | Magic string — `DSUS` if it's message by server (you), `DSUC` if by client (cemuhook). |
-| 5  | 6  | Protocol version used in message (unsigned). Currently `1001`. |
-| 7  | 8  | Length of packet without header (unsigned). Drop packet if it's too short, truncate if it's too long. |
-| 9  | 12 | CRC32 of whole packet while this field was zeroed. You may need to reverse one depending on your language implementation. |
-| 13 | 16 | Client or server ID (unsigned). Should stay the same on one run. Can be randomly generated on startup. |
-| 17 | 20 | **Not actually part of header so it counts as length.** Event type (unsigned). Read below for possible ones. |
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0  | 4  | String | Magic string — `DSUS` if it's message by server (you), `DSUC` if by client (cemuhook). |
+| 4  | 2  | Unsigned 16-bit | Protocol version used in message. Currently `1001`. |
+| 6  | 2  | Unsigned 16-bit | Length of packet without header. Drop packet if it's too short, truncate if it's too long. |
+| 8  | 4 | Unsigned 32-bit | CRC32 of whole packet while this field was zeroed out. Be careful with endianness here! |
+| 12 | 4 | Unsigned 32-bit | Client or server ID who sent this packet. Should stay the same on one run. Can be randomly generated on startup. |
+| 16 | 4 | Unsigned 32-bit | **Not actually part of header so it counts as length.** Event type. Read below to learn possible ones. |
 
-Below I'll refer to all positions **after cutting out first 20 bytes and impying that structure above is included in your response**.
+Below I'll refer to all positions **after cutting out first 20 bytes and impying that structure above is included in your response at the beginning**.
 
 # Message types
 
@@ -57,50 +39,50 @@ Below I'll refer to all positions **after cutting out first 20 bytes and impying
 | `0x100001` | Information about connected controllers |
 | `0x100002` | Actual controllers data |
 
-Same constants are used both for incoming and outgoing messages. So if you got message with type, response(s) to it will contain same constant.
+Same constants are used both for incoming and outgoing messages. So if you got message with some type, response(s) to it will have same type value.
 
 ## Protocol version information
 
-This message type carry no extra payload and require you to reply with maximal protocol version supported.
+This message type carry no extra incoming payload and require you to reply with maximal protocol version supported.
 
 ### Incoming packet structure
 
-| First byte position | Last byte position | Meaning |
-| ------------------- | ------------------ | ------- |
-| - | - | No additional payload. |
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| - | - | - | No additional payload. |
 
 ### Outgoing packet structure:
 
-| First byte position | Last byte position | Meaning |
-| ------------------- | ------------------ | ------- |
-| 1 | 2 | Maximal protocol version supported by your application. |
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 2 | Unsigned 16-bit | Maximal protocol version supported by your application. |
 
 ## Information about connected controllers
 
-This request type is more complicated. When you recieve it, you should report all controllers you serve (up to four).  
+This request type is a bit more complicated. When you recieve it, you should report all controllers you serve (up to four).  
 This message have length of 12 bytes (32 total with structure from above).  
 If controller for some port is not connected, you can respond with 12 zero bytes.
 
 ### Incoming packet structure
 
-| First byte position | Last byte position | Meaning |
-| ------------------- | ------------------ | ------- |
-| 1 | 4 | Amount of ports you should report about. Always less than 5. |
-| 5 | up to 8 | Each byte represent number of slot you should report about. Count of bytes here is determined by value above. Each value is less than 4. |
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 4 | **Signed 32-bit** | Amount of ports you should report about. Always less than 5. |
+| 4 | 1 to 4 | Unsigned 8-bit (array) | Each byte represent number of slot you should report about. Count of bytes here is determined by value above. Each value is less than 4. |
 
 For every requested controller slot you should send one packet structured like described below.
 
 ### Outgoing packet structure:
 
-| First byte position | Last byte position | Meaning |
-| ------------------- | ------------------ | ------- |
-| 1  | 1  | Slot you're reporting about. Must be the same as byte value you read. |
-| 2  | 2  | Slot state: `0` if not connected, `1` if reserved (?), `2` if connected. |
-| 3  | 3  | Device model. No idea about values. |
-| 4  | 4  | Connection type: `0` if not applicable, `1` for USB, `2` for bluetooth. |
-| 5  | 10 | MAC address of device. It's used to detect same device between launches. Zero out if not applicable. |
-| 11 | 11 | Battery status. See below for possible values. |
-| 12 | 12 | One zero byte. |
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0  | 1  | Unsigned 8-bit | Slot you're reporting about. Must be the same as byte value you read. |
+| 1  | 1  | Unsigned 8-bit | Slot state: `0` if not connected, `1` if reserved (?), `2` if connected. |
+| 2  | 1  | Unsigned 8-bit | Device model: `0` if not applicable, `1` if no or partial gyro `2` for full gyro. Value `3` exist but should not be used (RIP Half-Life series). |
+| 3  | 1  | Unsigned 8-bit | Connection type: `0` if not applicable, `1` for USB, `2` for bluetooth. |
+| 4  | 6 | Unsigned 48-bit | MAC address of device. It's used to detect same device between launches. Zero out if not applicable. |
+| 10 | 1 | Unsigned 8-bit | Battery status. See below for possible values. |
+| 11 | 1 | Unsigned 8-bit | One zero byte. |
 
 ### Battery values
 
