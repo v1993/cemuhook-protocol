@@ -164,6 +164,7 @@ Acceleration values are in m/s², gyroscope are in deg/s.
 | 71 | 4 | Float | Gyroscope roll |
 
 #### Touch data structure
+
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0 | 1 | Unsigned 8-bit | Is touch active (`1` if active, else `0`) |
