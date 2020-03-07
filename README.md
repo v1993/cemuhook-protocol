@@ -109,7 +109,7 @@ For every requested controller slot you should send one packet structured like d
 
 # Actual controllers data
 
-When you get this type of message, no instant response is required. Instead, you should begin or continue sending data from requested controller to this server. There is no way to know when server is gone, so you should implement some kind of timeout to stop sending data when server didn't requested data for some time.
+When you get this type of message, no instant response is required. Instead, you should begin or continue sending data from requested controller to this server. There is no way to know when client is gone, so you should implement some kind of timeout to stop sending data when client didn't requested data for some time.
 
 If requested controller is not connected, message should be ignored.
 
