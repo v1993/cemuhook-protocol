@@ -128,7 +128,7 @@ Total message length (*with packet header*) is 100 bytes.
 Bitmasks are described in descending order:, as bits in number go: `128`, `64`, `32` and so on.  
 All sticks use full 8-bit range (0-255). Set them to `128` for neutral value.  
 Analog buttons use full range as well. If button is not analog, report `0` for released and `255` for pressed states.  
-Acceleration values are in g's (1 g ≈ 9.8 m/s²), gyroscope ones are in deg/s. 
+Acceleration values are in g's (1 g ≈ 9.8 m/s²), gyroscope ones are in deg/s.  
 There is no standard range for touch values aside from requirement to have x axis point rightward and y to point downward. Clients interested in using touch input should implement some sort of calibration method to determine touch range.
 
 | Offset | Length | Type | Meaning |
