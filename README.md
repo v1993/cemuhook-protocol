@@ -138,8 +138,8 @@ There is no standard range for touch values aside from requirement to have x axi
 | 12 | 4 | Unsigned 32-bit | Packet number (for this client) |
 | 16 | 1 | Bitmask | D-Pad Left, D-Pad Down, D-Pad Right, D-Pad Up, Options (?), R3, L3, Share (?) |
 | 17 | 1 | Bitmask | Y, B, A, X, R1, L1, R2, L2 |
-| 18 | 1 | Unsigned 8-bit | PS Button (unused) |
-| 19 | 1 | Unsigned 8-bit | Touch Button (unused) |
+| 18 | 1 | Unsigned 8-bit | HOME Button (0 or 1) |
+| 19 | 1 | Unsigned 8-bit | Touch Button (0 or 1) |
 | 20 | 1 | Unsigned 8-bit | Left stick X (plus rightward) |
 | 21 | 1 | Unsigned 8-bit | Left stick Y **(plus upward)** |
 | 22 | 1 | Unsigned 8-bit | Right stick X (plus rightward) |
