@@ -38,8 +38,8 @@ Below I'll refer to all positions **after cutting out first 20 bytes and implyin
 | `0x100000` | Protocol version information (doesn't seem to be ever requested) |
 | `0x100001` | Information about connected controllers |
 | `0x100002` | Actual controllers data |
-| `0x100003` | Information about controller motors |
-| `0x100004` | Rumble controller motor |
+| `0x100003` | (Unofficial) Information about controller motors |
+| `0x100004` | (Unofficial) Rumble controller motor |
 
 Same constants are used both for incoming and outgoing messages. So if you got message with some type, response(s) to it will have same type value.
 
@@ -177,19 +177,15 @@ There is no standard range for touch values aside from requirement to have x axi
 | 2 | 2 | Unsigned 16-bit | Touch X position |
 | 4 | 2 | Unsigned 16-bit | Touch Y position |
 
-## (Optional) Information about controller motors
+## (Unofficial) Information about controller motors
 
 Ask/Reply how many motors in controller for some port.
-
-However, "DualShock" means there are two motors, so this interface does not need to be implemented. It can be agreed that id `0` is the left motor and id `1` is the right motor.
 
 ### Incoming packet structure
 
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
-| 0 | 1 | Unsigned 8-bit | Bitmask of actions you should take. Valid flags are `1` for slot-based registration, `2` for MAC-based registration, no bits (all set to `0`) to subscribe to all controllers. |
-| 1 | 1 | Unsigned 8-bit | If slot-based registration is requested, slot to report about. |
-| 2 | 6 | **Unsigned 48-bit** | If MAC-based registration is requested, MAC of device to report about. |
+| 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
 
 For every controller motor you should send one packet structured like described below.
 
@@ -199,10 +195,8 @@ For every controller motor you should send one packet structured like described 
 | ------ | ------ | ---- | ------- |
 | 0  | 11  | Complex | Beginning described above |
 | 11 | 1 | Unsigned 8-bit | Motor id |
-| 12 | 1 | Unsigned 8-bit | Motor usable (`1` if usable, else `0`) |
-| 13 | 1 | N/A | Zero byte (`\0`). |
 
-## Rumble controller motor
+## (Unofficial) Rumble controller motor
 
 Only incoming packet.
 
@@ -210,8 +204,6 @@ Only incoming packet.
 
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
-| 0 | 1 | Unsigned 8-bit | Bitmask of actions you should take. Valid flags are `1` for slot-based registration, `2` for MAC-based registration, no bits (all set to `0`) to subscribe to all controllers. |
-| 1 | 1 | Unsigned 8-bit | If slot-based registration is requested, slot to report about. |
-| 2 | 6 | **Unsigned 48-bit** | If MAC-based registration is requested, MAC of device to report about. |
+| 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
 | 8 | 1 | Unsigned 8-bit | Motor id. |
-| 9 | 1 | Unsigned 8-bit | Motor state (`0` means no vibration, else means vibration intensity)|
+| 9 | 1 | Unsigned 8-bit | Motor vibration intensity, 0~255 (`0` means no vibration)|
