@@ -187,14 +187,12 @@ Ask/Reply how many motors in controller for some port.
 | ------ | ------ | ---- | ------- |
 | 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
 
-For every controller motor you should send one packet structured like described below.
-
 ### Outgoing packet structure
 
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0  | 11  | Complex | Beginning described above |
-| 11 | 1 | Unsigned 8-bit | Motor id |
+| 11 | 1 | Unsigned 8-bit | Motor count (0 means not support rumble, normally should be 2, and the motor id takes value from 0 to `count-1`) |
 
 ## (Unofficial) Rumble controller motor
 
