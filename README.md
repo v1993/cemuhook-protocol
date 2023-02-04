@@ -18,7 +18,7 @@ Purpose of this document is to shed light on previously undocumented protocol it
 You can refer to C# implementations of BitConverter for details on this.  
 Numbers are encoded as little endian, which is also native endian on most platforms in the world (but not all).
 
-# Header stucture
+# Header structure
 
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
@@ -29,7 +29,7 @@ Numbers are encoded as little endian, which is also native endian on most platfo
 | 12 | 4 | Unsigned 32-bit | Client or server ID who sent this packet. Should stay the same on one run. Can be randomly generated on startup. |
 | 16 | 4 | Unsigned 32-bit | **Not actually part of header so it counts as length.** Event type. Read below to learn possible ones. |
 
-Below I'll refer to all positions **after cutting out first 20 bytes and impying that structure above is included in your response at the beginning**.
+Below I'll refer to all positions **after cutting out first 20 bytes and implying that structure above is included in your response at the beginning**.
 
 # Message types
 
@@ -38,6 +38,8 @@ Below I'll refer to all positions **after cutting out first 20 bytes and impying
 | `0x100000` | Protocol version information (doesn't seem to be ever requested) |
 | `0x100001` | Information about connected controllers |
 | `0x100002` | Actual controllers data |
+| `0x100003` | Information about controller motors |
+| `0x100004` | Rumble controller motor |
 
 Same constants are used both for incoming and outgoing messages. So if you got message with some type, response(s) to it will have same type value.
 
@@ -87,7 +89,7 @@ This structure is 11 bytes long.
 
 ## Information about connected controllers
 
-This request type is a bit more complicated. When you recieve it, you should report all controllers you serve (up to four).  
+This request type is a bit more complicated. When you receive it, you should report all controllers you serve (up to four).  
 This message have length of 12 bytes (32 total with structure from above).  
 If controller for some port is not connected, you can respond with 12 zero bytes (plus header).
 
@@ -171,6 +173,45 @@ There is no standard range for touch values aside from requirement to have x axi
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0 | 1 | Unsigned 8-bit | Is touch active (`1` if active, else `0`) |
-| 1 | 1 | Unsigned 8-bit | Touch id (should be the same for one continious touch) |
+| 1 | 1 | Unsigned 8-bit | Touch id (should be the same for one continuous touch) |
 | 2 | 2 | Unsigned 16-bit | Touch X position |
 | 4 | 2 | Unsigned 16-bit | Touch Y position |
+
+## (Optional) Information about controller motors
+
+Ask/Reply how many motors in controller for some port.
+
+However, "DualShock" means there are two motors, so this interface does not need to be implemented. It can be agreed that id `0` is the left motor and id `1` is the right motor.
+
+### Incoming packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 1 | Unsigned 8-bit | Bitmask of actions you should take. Valid flags are `1` for slot-based registration, `2` for MAC-based registration, no bits (all set to `0`) to subscribe to all controllers. |
+| 1 | 1 | Unsigned 8-bit | If slot-based registration is requested, slot to report about. |
+| 2 | 6 | **Unsigned 48-bit** | If MAC-based registration is requested, MAC of device to report about. |
+
+For every controller motor you should send one packet structured like described below.
+
+### Outgoing packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0  | 11  | Complex | Beginning described above |
+| 11 | 1 | Unsigned 8-bit | Motor id |
+| 12 | 1 | Unsigned 8-bit | Motor usable (`1` if usable, else `0`) |
+| 13 | 1 | N/A | Zero byte (`\0`). |
+
+## Rumble controller motor
+
+Only incoming packet.
+
+### Incoming packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 1 | Unsigned 8-bit | Bitmask of actions you should take. Valid flags are `1` for slot-based registration, `2` for MAC-based registration, no bits (all set to `0`) to subscribe to all controllers. |
+| 1 | 1 | Unsigned 8-bit | If slot-based registration is requested, slot to report about. |
+| 2 | 6 | **Unsigned 48-bit** | If MAC-based registration is requested, MAC of device to report about. |
+| 8 | 1 | Unsigned 8-bit | Motor id. |
+| 9 | 1 | Unsigned 8-bit | Motor state (`0` means no vibration, else means vibration intensity)|
