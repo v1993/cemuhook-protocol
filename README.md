@@ -196,7 +196,9 @@ Query how many rumble motors specified controllers have.
 
 ## (Unofficial) Rumble controller motor
 
-Only incoming packet.
+Set rumble intensity for controller motor. Only incoming packet.
+
+Clients should periodically (twice to ten times per second) re-send rumble state (both zero and non-zero) to account for potential packet loss. Servers should reset motor's rumble strength to zero if they haven't received rumble packets for it for prolonged period of time (whatever you use for client timeout is a good estimate, which should be about 5 seconds) to avoid controllers getting stuck rumbling in the event client disconnects disgracefully.
 
 ### Incoming packet structure
 
