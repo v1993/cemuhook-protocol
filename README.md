@@ -203,5 +203,5 @@ Only incoming packet.
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
-| 8 | 1 | Unsigned 8-bit | Motor id. |
+| 8 | 1 | Unsigned 8-bit | Motor id, 0~`motor count-1` |
 | 9 | 1 | Unsigned 8-bit | Motor vibration intensity, 0~255 (`0` means no vibration)|
