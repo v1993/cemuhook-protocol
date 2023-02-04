@@ -192,7 +192,7 @@ Ask/Reply how many motors in controller for some port.
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0  | 11  | Complex | Beginning described above |
-| 11 | 1 | Unsigned 8-bit | Motor count (0 means not support rumble, normally should be 2, and the motor id takes value from 0 to `count-1`) |
+| 11 | 1 | Unsigned 8-bit | Motor count - common values are 0 (no rumble support), 1 (single motor), and 2 (left/right motors) |
 
 ## (Unofficial) Rumble controller motor
 
