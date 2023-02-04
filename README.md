@@ -179,7 +179,7 @@ There is no standard range for touch values aside from requirement to have x axi
 
 ## (Unofficial) Information about controller motors
 
-Ask/Reply how many motors in controller for some port.
+Query how many rumble motors specified controllers have.
 
 ### Incoming packet structure
 
