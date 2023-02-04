@@ -38,8 +38,8 @@ Below I'll refer to all positions **after cutting out first 20 bytes and implyin
 | `0x100000` | Protocol version information (doesn't seem to be ever requested) |
 | `0x100001` | Information about connected controllers |
 | `0x100002` | Actual controllers data |
-| `0x100003` | (Unofficial) Information about controller motors |
-| `0x100004` | (Unofficial) Rumble controller motor |
+| `0x110001` | (Unofficial) Information about controller motors |
+| `0x110002` | (Unofficial) Rumble controller motor |
 
 Same constants are used both for incoming and outgoing messages. So if you got message with some type, response(s) to it will have same type value.
 
