@@ -18,7 +18,7 @@ Purpose of this document is to shed light on previously undocumented protocol it
 You can refer to C# implementations of BitConverter for details on this.  
 Numbers are encoded as little endian, which is also native endian on most platforms in the world (but not all).
 
-# Header stucture
+# Header structure
 
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
@@ -29,7 +29,7 @@ Numbers are encoded as little endian, which is also native endian on most platfo
 | 12 | 4 | Unsigned 32-bit | Client or server ID who sent this packet. Should stay the same on one run. Can be randomly generated on startup. |
 | 16 | 4 | Unsigned 32-bit | **Not actually part of header so it counts as length.** Event type. Read below to learn possible ones. |
 
-Below I'll refer to all positions **after cutting out first 20 bytes and impying that structure above is included in your response at the beginning**.
+Below I'll refer to all positions **after cutting out first 20 bytes and implying that structure above is included in your response at the beginning**.
 
 # Message types
 
@@ -38,6 +38,8 @@ Below I'll refer to all positions **after cutting out first 20 bytes and impying
 | `0x100000` | Protocol version information (doesn't seem to be ever requested) |
 | `0x100001` | Information about connected controllers |
 | `0x100002` | Actual controllers data |
+| `0x110001` | (Unofficial) Information about controller motors |
+| `0x110002` | (Unofficial) Rumble controller motor |
 
 Same constants are used both for incoming and outgoing messages. So if you got message with some type, response(s) to it will have same type value.
 
@@ -87,7 +89,7 @@ This structure is 11 bytes long.
 
 ## Information about connected controllers
 
-This request type is a bit more complicated. When you recieve it, you should report all controllers you serve (up to four).  
+This request type is a bit more complicated. When you receive it, you should report all controllers you serve (up to four).  
 This message have length of 12 bytes (32 total with structure from above).  
 If controller for some port is not connected, you can respond with 12 zero bytes (plus header).
 
@@ -171,6 +173,37 @@ There is no standard range for touch values aside from requirement to have x axi
 | Offset | Length | Type | Meaning |
 | ------ | ------ | ---- | ------- |
 | 0 | 1 | Unsigned 8-bit | Is touch active (`1` if active, else `0`) |
-| 1 | 1 | Unsigned 8-bit | Touch id (should be the same for one continious touch) |
+| 1 | 1 | Unsigned 8-bit | Touch id (should be the same for one continuous touch) |
 | 2 | 2 | Unsigned 16-bit | Touch X position |
 | 4 | 2 | Unsigned 16-bit | Touch Y position |
+
+## (Unofficial) Information about controller motors
+
+Query how many rumble motors specified controllers have.
+
+### Incoming packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
+
+### Outgoing packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0  | 11  | Complex | Beginning described above |
+| 11 | 1 | Unsigned 8-bit | Motor count - common values are 0 (no rumble support), 1 (single motor), and 2 (left/right motors) |
+
+## (Unofficial) Rumble controller motor
+
+Set rumble intensity for controller motor. Only incoming packet.
+
+Clients should periodically (twice to ten times per second) re-send rumble state (both zero and non-zero) to account for potential packet loss. Servers should reset motor's rumble strength to zero if they haven't received rumble packets for it for prolonged period of time (whatever you use for client timeout is a good estimate, which should be about 5 seconds) to avoid controllers getting stuck rumbling in the event client disconnects disgracefully.
+
+### Incoming packet structure
+
+| Offset | Length | Type | Meaning |
+| ------ | ------ | ---- | ------- |
+| 0 | 8 | Complex | Controller identification header, same as the incoming packet of "Actual controllers data" |
+| 8 | 1 | Unsigned 8-bit | Motor id, 0~`motor count-1` |
+| 9 | 1 | Unsigned 8-bit | Motor vibration intensity, 0~255 (`0` means no vibration)|
